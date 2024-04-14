@@ -1,0 +1,3 @@
+Added Pin To Net: NetName=VBAT Pin=*-1
+Added Pin To Net: NetName=VBAT Pin=sw1-2
+Added Room: Name=NodoFinalTbeam

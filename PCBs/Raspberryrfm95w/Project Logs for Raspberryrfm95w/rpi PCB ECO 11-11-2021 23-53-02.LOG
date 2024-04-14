@@ -1,0 +1,4 @@
+Added Pin To Net: NetName=GND Pin=IC1-8
+Added Pin To Net: NetName=GND Pin=IC1-15
+Added Pin To Net: NetName=GND Pin=P1-20
+Added Room: Name=rpi

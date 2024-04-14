@@ -1,0 +1,7 @@
+Removed Pin From Net: NetName=TX Pin=IC2-2
+Removed Member From Class: ClassName=FirebeetleNodoFinal Member=IC2
+Added Component: Designator=IC?(NEO6M)
+Add component. Clean all parameters for all variants
+Added Pin To Net: NetName=GND Pin=IC?-1
+Added Pin To Net: NetName=TX Pin=IC?-3
+Added Member To Class: ClassName=FirebeetleNodoFinal Member=Component IC? NEO6M

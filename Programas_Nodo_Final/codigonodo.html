@@ -1,0 +1,370 @@
+<pre>
+
+<font color="#95a5a6">&#47;*</font>
+<font color="#95a5a6"> &nbsp;*************************** &nbsp;Escuela Politécnica Nacional &nbsp;**************************************</font>
+<font color="#95a5a6"> &nbsp;* DISEÑO E IMPLEMENTACIÓN DE UN PROTOTIPO DE MONITOREO DE GEOPOSICIÓN Y TEMPERATURA PARA GANADO *</font>
+<font color="#95a5a6"> &nbsp;* Realizado por: Eduardo Chango</font>
+<font color="#95a5a6"> &nbsp;* Fecha actualización: 24&#47;11&#47;2021</font>
+<font color="#95a5a6"> &nbsp;* </font>
+<font color="#95a5a6"> &nbsp;* Indice de contenidos</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;1. Inclución de Librerias</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;2. Asignación de pines</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;3. Configuración de parámetros</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;4. Función de los sensores</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;&nbsp;&nbsp;4.1 Funcion de lectura del sensor de temperatura</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;&nbsp;&nbsp;4.2 Funcion de lectura del sensor de bateria</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;&nbsp;&nbsp;4.3 Funcion de envio LoRa</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;&nbsp;&nbsp;4.4 Funcion para enviar a dormir</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;5. Configuraciones del programa</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;&nbsp;&nbsp;5.1 Pin activar sensores</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;&nbsp;&nbsp;5.2 Serial para el GPS</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;&nbsp;&nbsp;5.3 Inicializar el serial para prueba</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;&nbsp;&nbsp;5.4 Inicializar sensor de temperatura</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;&nbsp;&nbsp;5.5 Configurar el modo de sueño</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;&nbsp;&nbsp;5.6 Configurar LoRa</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;</font>
+<font color="#95a5a6"> &nbsp;* &nbsp;&nbsp;</font>
+<font color="#95a5a6">*&#47;</font>
+
+
+
+
+
+
+<font color="#95a5a6">&#47;************************************</font>
+<font color="#95a5a6"></font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;1. Inclusión de Librerias </font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;</font>
+<font color="#95a5a6">*************************************&#47;</font>
+
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Libreria para LoRa LoRa</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><b><font color="#d35400">SPI</font></b><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+ &nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Libreria para sensor Temperatura</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><font color="#d35400">Wire</font><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><font color="#000000">Adafruit_MLX90614</font><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">Adafruit_MLX90614</font> <font color="#000000">mlx</font> <font color="#434f54">=</font> <font color="#000000">Adafruit_MLX90614</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Libreria para el GPS</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><b><font color="#d35400">SoftwareSerial</font></b><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><b><font color="#d35400">TinyGPS</font></b><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font> &nbsp;<font color="#434f54">&#47;&#47; Por: Mikael Hart</font>
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">TinyGPS</font></b> <font color="#000000">gps</font><font color="#000000">;</font>
+
+
+
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Libreria para el BT</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><font color="#000000">BluetoothSerial</font><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">BluetoothSerial</font> <font color="#000000">ESP_BT</font><font color="#000000">;</font>
+
+
+<font color="#95a5a6">&#47;************************************</font>
+<font color="#95a5a6"></font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;2. Asignación de Pines</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;</font>
+<font color="#95a5a6">*************************************&#47;</font>
+
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Pines chip LoRa sx1276</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#define</font> <font color="#000000">SCK</font> <font color="#000000">18</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#define</font> <font color="#000000">MISO</font> <font color="#000000">19</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#define</font> <font color="#000000">MOSI</font> <font color="#000000">23</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#define</font> <font color="#000000">SS</font> <font color="#000000">13</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#define</font> <font color="#000000">RST</font> <font color="#000000">14</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#define</font> <font color="#000000">DIO0</font> <font color="#000000">4</font>
+ &nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Pin activación de sensores GPS&#47; MXL90614&#47; Sensor de batería</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#define</font> <font color="#000000">ACTSENSOR</font> <font color="#000000">15</font>
+ &nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Pin sensor de batería</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#define</font> <font color="#000000">SENSORBATERIA</font> <font color="#000000">34</font>
+
+
+<font color="#95a5a6">&#47;************************************</font>
+<font color="#95a5a6"></font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;3. Configuración de parámetros</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;</font>
+<font color="#95a5a6">*************************************&#47;</font>
+
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Parámetros LoRa</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;433E6 for Asia</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;866E6 for Europe</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;915E6 for North America</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#define</font> <font color="#000000">BAND</font> <font color="#000000">915E6</font>
+
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#define</font> <font color="#000000">uS_TO_S_FACTOR</font> <font color="#000000">1000000</font> &nbsp;<font color="#434f54">&#47;&#47;Conversion factor for micro seconds to seconds</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">#define</font> <font color="#000000">TIME_TO_SLEEP</font> &nbsp;<font color="#000000">120</font> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Time ESP32 will go to sleep (in seconds)</font>
+
+
+
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Variables de tiempo</font>
+ &nbsp;&nbsp;&nbsp;<font color="#00979c">const</font> <font color="#00979c">int</font> <font color="#000000">vectMin</font><font color="#000000">[</font><font color="#000000">6</font><font color="#000000">]</font> <font color="#434f54">=</font> <font color="#000000">{</font><font color="#000000">0</font><font color="#434f54">,</font><font color="#000000">10</font><font color="#434f54">,</font><font color="#000000">20</font><font color="#434f54">,</font><font color="#000000">30</font><font color="#434f54">,</font><font color="#000000">40</font><font color="#434f54">,</font><font color="#000000">50</font><font color="#000000">}</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#00979c">const</font> <font color="#00979c">int</font> <font color="#000000">vectSeg</font><font color="#000000">[</font><font color="#000000">6</font><font color="#000000">]</font> <font color="#434f54">=</font> <font color="#000000">{</font><font color="#000000">60</font><font color="#434f54">,</font><font color="#000000">60</font><font color="#434f54">,</font><font color="#000000">60</font><font color="#434f54">,</font><font color="#000000">60</font><font color="#434f54">,</font><font color="#000000">60</font><font color="#434f54">,</font><font color="#000000">60</font><font color="#000000">}</font><font color="#000000">;</font>
+<font color="#95a5a6">&#47;************************************</font>
+<font color="#95a5a6"></font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;4. Funciones de los sensores</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;</font>
+<font color="#95a5a6">*************************************&#47;</font>
+
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;4.1 Funcion de lectura del sensor de temperatura</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#00979c">float</font> <font color="#000000">leerTemperatura</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#00979c">float</font> <font color="#000000">temperatura</font> <font color="#434f54">=</font> <font color="#000000">mlx</font><font color="#434f54">.</font><font color="#000000">readObjectTempC</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#434f54">+</font> <font color="#000000">3.0</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;Compensación de 3 Grados respecto al Fluke 62 MAX</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#5e6d03">return</font> <font color="#000000">temperatura</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;4.2 Funcion de lectura del sensor de bateria</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#00979c">float</font> <font color="#000000">leerBateria</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#00979c">float</font> <font color="#000000">bateria</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#5e6d03">for</font><font color="#000000">(</font><font color="#00979c">int</font> <font color="#000000">i</font><font color="#434f54">=</font><font color="#000000">0</font><font color="#000000">;</font> <font color="#000000">i</font><font color="#434f54">&lt;</font><font color="#000000">20</font><font color="#000000">;</font> <font color="#000000">i</font><font color="#434f54">++</font><font color="#000000">)</font><font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#00979c">int</font> <font color="#000000">bateriaAux</font> <font color="#434f54">=</font> <font color="#000000">(</font><font color="#000000">0.1768</font><font color="#434f54">*</font><font color="#d35400">analogRead</font><font color="#000000">(</font><font color="#000000">SENSORBATERIA</font><font color="#000000">)</font><font color="#000000">)</font><font color="#434f54">-</font><font color="#000000">314.31</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">bateria</font><font color="#434f54">=</font><font color="#000000">bateria</font><font color="#434f54">+</font><font color="#000000">bateriaAux</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">bateria</font><font color="#434f54">=</font><font color="#000000">bateria</font><font color="#434f54">*</font><font color="#000000">0.05</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#5e6d03">return</font> <font color="#000000">bateria</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;4.3 Funcion de envio LoRa</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#00979c">void</font> <font color="#000000">enviarInformacion</font><font color="#000000">(</font><font color="#00979c">float</font> <font color="#000000">temperatura</font><font color="#434f54">,</font><font color="#00979c">float</font> <font color="#000000">bateria</font><font color="#434f54">,</font><font color="#00979c">float</font> <font color="#000000">flon1</font><font color="#434f54">,</font><font color="#00979c">float</font> <font color="#000000">flat1</font><font color="#434f54">,</font><font color="#00979c">String</font> <font color="#000000">id</font><font color="#000000">)</font><font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">flat1</font> <font color="#434f54">=</font> <font color="#000000">flat1</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;Encriptado simple para la latitud</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">flon1</font> <font color="#434f54">=</font> <font color="#000000">flon1</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;Encriptado simple para la longitud</font>
+
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">beginPacket</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;123&#34;</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;Mensaje de arranque, sin relevancia</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;,&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#00979c">String</font><font color="#000000">(</font><font color="#000000">temperatura</font><font color="#434f54">,</font> <font color="#000000">2</font><font color="#000000">)</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;Envio de temperatura con dos digitos decimales</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;,&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#00979c">String</font><font color="#000000">(</font><font color="#000000">bateria</font><font color="#434f54">,</font> <font color="#000000">1</font><font color="#000000">)</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;Envio de nivel de bateria con un digito decimal </font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;,&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#00979c">String</font><font color="#000000">(</font><font color="#000000">flon1</font><font color="#434f54">,</font><font color="#000000">7</font><font color="#000000">)</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;Envio de latitud con siete digitos decimales</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;,&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#00979c">String</font><font color="#000000">(</font><font color="#000000">flat1</font><font color="#434f54">,</font><font color="#000000">7</font><font color="#000000">)</font><font color="#000000">)</font><font color="#000000">;</font><font color="#434f54">&#47;&#47;Envio de longitud de bateria con siete digitos decimales</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;,&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#000000">id</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;Envio del id del dispositivo</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">endPacket</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;4.4 Funcion para enviar a dormir</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#00979c">void</font> <font color="#000000">veteaDormir</font><font color="#000000">(</font><font color="#00979c">int</font> <font color="#000000">segundosRestantes</font><font color="#000000">)</font><font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">sleep</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font> &nbsp;<font color="#434f54">&#47;&#47;Enviar a dormir el chip LoRa</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">ACTSENSOR</font><font color="#434f54">,</font><font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47; Apagar el GPS&#47; Chip LoRa&#47; Sensor de temperatura</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">esp_sleep_enable_timer_wakeup</font><font color="#000000">(</font><font color="#000000">(</font><font color="#000000">segundosRestantes</font><font color="#000000">)</font> <font color="#434f54">*</font> <font color="#000000">uS_TO_S_FACTOR</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47; Fijar el tiempo de sueño</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">esp_deep_sleep_start</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font><font color="#434f54">&#47;&#47;ESP32 entra en deep sleep &nbsp;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+
+
+<font color="#434f54">&#47;&#47;********************FUNCION DE ENVIO DE DATOS SERIAL GPS</font>
+<font color="#00979c">void</font> <font color="#000000">sendUBX</font><font color="#000000">(</font><font color="#00979c">byte</font> <font color="#434f54">*</font><font color="#000000">MSG</font><font color="#434f54">,</font> <font color="#00979c">uint8_t</font> <font color="#000000">len</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;<font color="#5e6d03">for</font><font color="#000000">(</font><font color="#00979c">int</font> <font color="#000000">i</font><font color="#434f54">=</font><font color="#000000">0</font><font color="#000000">;</font> <font color="#000000">i</font><font color="#434f54">&lt;</font><font color="#000000">len</font><font color="#000000">;</font> <font color="#000000">i</font><font color="#434f54">++</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial2</font></b><font color="#434f54">.</font><font color="#d35400">write</font><font color="#000000">(</font><font color="#000000">MSG</font><font color="#000000">[</font><font color="#000000">i</font><font color="#000000">]</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<font color="#000000">}</font>
+<font color="#000000">}</font>
+
+
+
+<font color="#95a5a6">&#47;************************************</font>
+<font color="#95a5a6"></font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;5. Configuraciones del programa</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;</font>
+<font color="#95a5a6">*************************************&#47;</font>
+<font color="#00979c">int</font> <font color="#000000">LEDstate</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+<font color="#00979c">uint8_t</font> <font color="#000000">contador</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+
+<font color="#00979c">void</font> <font color="#5e6d03">setup</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">2</font><font color="#434f54">,</font><font color="#00979c">OUTPUT</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<font color="#434f54">&#47;&#47;5.1 Pin activar sensores</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">ACTSENSOR</font><font color="#434f54">,</font> <font color="#00979c">OUTPUT</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">ACTSENSOR</font><font color="#434f54">,</font> <font color="#00979c">HIGH</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;
+ &nbsp;<font color="#434f54">&#47;&#47;5.2 Serial para el GPS</font>
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial2</font></b><font color="#434f54">.</font><font color="#d35400">begin</font><font color="#000000">(</font><font color="#000000">9600</font><font color="#434f54">,</font><font color="#000000">SERIAL_8N1</font><font color="#434f54">,</font><font color="#000000">16</font><font color="#434f54">,</font><font color="#000000">17</font><font color="#000000">)</font><font color="#000000">;</font>
+
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;byte CFG_RXM_fop[10] = {0xB5,0x62,0x06,0X11,0X02,0X00,0X08,0X00,0X21,0X91};</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;sendUBX(CFG_RXM_fop, sizeof(CFG_RXM_fop)&#47;sizeof(byte));</font>
+
+ &nbsp;&nbsp;&nbsp;<font color="#00979c">byte</font> <font color="#000000">GPSon</font><font color="#000000">[</font><font color="#000000">12</font><font color="#000000">]</font> <font color="#434f54">=</font> <font color="#000000">{</font><font color="#000000">0xB5</font><font color="#434f54">,</font> <font color="#000000">0x62</font><font color="#434f54">,</font> <font color="#000000">0x06</font><font color="#434f54">,</font> <font color="#000000">0x04</font><font color="#434f54">,</font> <font color="#000000">0x04</font><font color="#434f54">,</font> <font color="#000000">0x00</font><font color="#434f54">,</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">0x00</font><font color="#434f54">,</font> <font color="#000000">0x00</font><font color="#434f54">,</font><font color="#000000">0x09</font><font color="#434f54">,</font> <font color="#000000">0x00</font><font color="#434f54">,</font> <font color="#000000">0x17</font><font color="#434f54">,</font> <font color="#000000">0x76</font><font color="#000000">}</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">sendUBX</font><font color="#000000">(</font><font color="#000000">GPSon</font><font color="#434f54">,</font> <font color="#00979c">sizeof</font><font color="#000000">(</font><font color="#000000">GPSon</font><font color="#000000">)</font><font color="#434f54">&#47;</font><font color="#00979c">sizeof</font><font color="#000000">(</font><font color="#00979c">byte</font><font color="#000000">)</font><font color="#000000">)</font><font color="#000000">;</font>
+
+ &nbsp;<font color="#434f54">&#47;&#47;5.3 Inicializar el serial para pruebas</font>
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">begin</font><font color="#000000">(</font><font color="#000000">115200</font><font color="#000000">)</font><font color="#000000">;</font>
+
+ &nbsp;<font color="#434f54">&#47;&#47;5.4 Inicializar sensor de temperatura</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">mlx</font><font color="#434f54">.</font><font color="#d35400">begin</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">mlx</font><font color="#434f54">.</font><font color="#000000">writeEmissivity</font><font color="#000000">(</font><font color="#000000">0.96</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Serial.print(mlx.readEmissivity());</font>
+
+ &nbsp;<font color="#434f54">&#47;&#47;5.5 Configurar el modo de sueño</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);</font>
+
+ &nbsp;<font color="#434f54">&#47;&#47;5.6 Configurar LoRa</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;SPI.begin(SCK, MISO, MOSI, SS);</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;setup LoRa transceiver module</font>
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">setPins</font><font color="#000000">(</font><font color="#000000">SS</font><font color="#434f54">,</font> <font color="#000000">RST</font><font color="#434f54">,</font> <font color="#000000">DIO0</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#434f54">!</font><b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">begin</font><font color="#000000">(</font><font color="#000000">BAND</font><font color="#000000">)</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#005c5f">&#34;Starting LoRa failed!&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#5e6d03">while</font> <font color="#000000">(</font><font color="#000000">1</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">setSyncWord</font><font color="#000000">(</font><font color="#000000">0x12</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;LoRa.setTxPower(20);</font>
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#d35400">setSpreadingFactor</font><font color="#000000">(</font><font color="#000000">7</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><b><font color="#d35400">LoRa</font></b><font color="#434f54">.</font><font color="#000000">getSpreadingFactor</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#005c5f">&#34;LoRa Inicializacion OK!&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">delay</font><font color="#000000">(</font><font color="#000000">2000</font><font color="#000000">)</font><font color="#000000">;</font>
+
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Variable de inicio</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">contador</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+<font color="#000000">}</font>
+
+<font color="#00979c">void</font> <font color="#5e6d03">loop</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+
+ &nbsp;<font color="#95a5a6">&#47;********************************************************************</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VARIABLES LOCALES</font>
+<font color="#95a5a6"> &nbsp;&nbsp;********************************************************************&#47;</font>
+ &nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;<font color="#00979c">bool</font> <font color="#000000">newData</font> <font color="#434f54">=</font> <font color="#00979c">false</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#00979c">unsigned</font> <font color="#00979c">long</font> <font color="#000000">chars</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#00979c">unsigned</font> <font color="#00979c">short</font> <font color="#000000">sentences</font><font color="#434f54">,</font> <font color="#000000">failed</font><font color="#000000">;</font>
+
+ &nbsp;&nbsp;&nbsp;<font color="#00979c">float</font> <font color="#000000">flon1</font> <font color="#434f54">=</font> <font color="#000000">1.0</font><font color="#000000">;</font><font color="#434f54">&#47;&#47;-78.5126792;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#00979c">float</font> <font color="#000000">flat1</font> <font color="#434f54">=</font> <font color="#000000">1.0</font><font color="#000000">;</font><font color="#434f54">&#47;&#47;-0.2743293; </font>
+
+ &nbsp;&nbsp;&nbsp;<font color="#95a5a6">&#47;*</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tambillo</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;longitud= -78.537574;</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;latitud= -0.407238;</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Casa</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;longitud = -78.512724</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;latitud = -0.274338</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;*&#47;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#00979c">int</font> <font color="#000000">minuto</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#434f54">,</font> <font color="#000000">segundo</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+
+ &nbsp;&nbsp;&nbsp;<font color="#00979c">int</font> <font color="#000000">minutoTarget</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;<font color="#00979c">uint8_t</font> <font color="#000000">numeroSatelites</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+ &nbsp;
+ &nbsp;<font color="#95a5a6">&#47;********************************************************************</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEER SENSORES</font>
+<font color="#95a5a6"> &nbsp;&nbsp;********************************************************************&#47;</font>
+ &nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;<font color="#00979c">float</font> <font color="#000000">temperatura</font> <font color="#434f54">=</font> <font color="#000000">leerTemperatura</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#00979c">float</font> <font color="#000000">bateria</font> <font color="#434f54">=</font> <font color="#000000">leerBateria</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+
+
+ &nbsp;&nbsp;&nbsp;<font color="#95a5a6">&#47;********************************************************************</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ACTUALIZAR DATOS DEL GPS &nbsp;</font>
+<font color="#95a5a6"> &nbsp;&nbsp;********************************************************************&#47;</font>
+ &nbsp;
+ &nbsp;<font color="#434f54">&#47;&#47;Esperar que haya pasado un segundo antes de intentar obtener el siguiente dato GPS</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">for</font> <font color="#000000">(</font><font color="#00979c">unsigned</font> <font color="#00979c">long</font> <font color="#000000">start</font> <font color="#434f54">=</font> <font color="#d35400">millis</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#d35400">millis</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#434f54">-</font> <font color="#000000">start</font> <font color="#434f54">&lt;</font> <font color="#000000">1000</font><font color="#000000">;</font><font color="#000000">)</font> 
+ &nbsp;&nbsp;&nbsp;<font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#5e6d03">while</font> <font color="#000000">(</font><b><font color="#d35400">Serial2</font></b><font color="#434f54">.</font><font color="#d35400">available</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">)</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#00979c">char</font> <font color="#000000">c</font> <font color="#434f54">=</font> <b><font color="#d35400">Serial2</font></b><font color="#434f54">.</font><font color="#d35400">read</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Serial.print(c); &#47;&#47; Datos gps en crudo</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">gps</font><font color="#434f54">.</font><font color="#d35400">encode</font><font color="#000000">(</font><font color="#000000">c</font><font color="#000000">)</font><font color="#000000">)</font> <font color="#434f54">&#47;&#47;Si existe un dato válido la bandera cambia a True</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">newData</font> <font color="#434f54">=</font> <font color="#00979c">true</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+
+
+ &nbsp;<font color="#434f54">&#47;&#47;Si los datos del GPS son válidos obtener datos de latitud, longitud, minuto y segundo</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">newData</font><font color="#000000">)</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#95a5a6">&#47;************************************************</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Variables locales para datos gps</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;************************************************&#47;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#00979c">unsigned</font> <font color="#00979c">long</font> <font color="#000000">age</font><font color="#434f54">,</font> <font color="#d35400">time</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#00979c">int</font> <font color="#d35400">year</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#00979c">byte</font> <font color="#d35400">month</font><font color="#434f54">,</font> <font color="#d35400">day</font><font color="#434f54">,</font> <font color="#d35400">hour</font><font color="#434f54">,</font> <font color="#d35400">minute</font><font color="#434f54">,</font> <font color="#d35400">second</font><font color="#434f54">,</font> <font color="#000000">hundredths</font><font color="#000000">;</font>
+
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#95a5a6">&#47;************************************************************************************************</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Obtener datos de latitud y longitud</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;************************************************************************************************&#47;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">gps</font><font color="#434f54">.</font><font color="#d35400">f_get_position</font><font color="#000000">(</font><font color="#434f54">&amp;</font><font color="#000000">flat1</font><font color="#434f54">,</font> <font color="#434f54">&amp;</font><font color="#000000">flon1</font><font color="#434f54">,</font> <font color="#434f54">&amp;</font><font color="#000000">age</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">flat1</font> <font color="#434f54">==</font> <b><font color="#d35400">TinyGPS</font></b><font color="#434f54">:</font><font color="#434f54">:</font><font color="#00979c">GPS_INVALID_F_ANGLE</font> <font color="#434f54">?</font> <font color="#000000">0.0</font> <font color="#434f54">:</font> <font color="#000000">flat1</font><font color="#434f54">,</font> <font color="#000000">6</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">flon1</font> <font color="#434f54">==</font> <b><font color="#d35400">TinyGPS</font></b><font color="#434f54">:</font><font color="#434f54">:</font><font color="#00979c">GPS_INVALID_F_ANGLE</font> <font color="#434f54">?</font> <font color="#000000">0.0</font> <font color="#434f54">:</font> <font color="#000000">flon1</font><font color="#434f54">,</font> <font color="#000000">6</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#95a5a6">&#47;************************************************************************************************</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Obtener el número de satelites al que esta conectado el GPS</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;************************************************************************************************&#47;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">gps</font><font color="#434f54">.</font><font color="#d35400">satellites</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#434f54">==</font> <b><font color="#d35400">TinyGPS</font></b><font color="#434f54">:</font><font color="#434f54">:</font><font color="#00979c">GPS_INVALID_SATELLITES</font> <font color="#434f54">?</font> <font color="#000000">0</font> <font color="#434f54">:</font> <font color="#000000">gps</font><font color="#434f54">.</font><font color="#d35400">satellites</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">numeroSatelites</font> <font color="#434f54">=</font> <font color="#000000">gps</font><font color="#434f54">.</font><font color="#d35400">satellites</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#95a5a6">&#47;************************************************************************************************</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Obtener el minuto y segundo actual, para calcular el tiempo de deep sleep</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;************************************************************************************************&#47;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">gps</font><font color="#434f54">.</font><font color="#d35400">crack_datetime</font><font color="#000000">(</font><font color="#434f54">&amp;</font><font color="#d35400">year</font><font color="#434f54">,</font> <font color="#434f54">&amp;</font><font color="#d35400">month</font><font color="#434f54">,</font> <font color="#434f54">&amp;</font><font color="#d35400">day</font><font color="#434f54">,</font> <font color="#434f54">&amp;</font><font color="#d35400">hour</font><font color="#434f54">,</font> <font color="#434f54">&amp;</font><font color="#d35400">minute</font><font color="#434f54">,</font> <font color="#434f54">&amp;</font><font color="#d35400">second</font><font color="#434f54">,</font> <font color="#434f54">&amp;</font><font color="#000000">hundredths</font><font color="#434f54">,</font> <font color="#434f54">&amp;</font><font color="#000000">age</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">minuto</font> <font color="#434f54">=</font> <font color="#d35400">minute</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">segundo</font> <font color="#434f54">=</font> <font color="#d35400">second</font><font color="#000000">;</font>
+
+
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#00979c">int</font> <font color="#000000">index</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#5e6d03">while</font><font color="#000000">(</font><font color="#000000">minuto</font> <font color="#434f54">&gt;=</font> <font color="#000000">vectMin</font><font color="#000000">[</font><font color="#000000">index</font><font color="#000000">]</font><font color="#000000">)</font><font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">index</font> <font color="#434f54">=</font> <font color="#000000">index</font> <font color="#434f54">+</font> <font color="#000000">1</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#5e6d03">if</font><font color="#000000">(</font><font color="#000000">index</font> <font color="#434f54">==</font> <font color="#000000">6</font><font color="#000000">)</font><font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">index</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#5e6d03">break</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Aqui sale el index con el minuto restante calculado</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">minutoTarget</font> <font color="#434f54">=</font> <font color="#000000">vectMin</font><font color="#000000">[</font><font color="#000000">index</font><font color="#000000">]</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47; si el vector de minutos fue seleccionado el minuto 0, entonces toma el valor de 60</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#5e6d03">if</font><font color="#000000">(</font><font color="#000000">minutoTarget</font> <font color="#434f54">==</font> <font color="#000000">0</font><font color="#000000">)</font><font color="#000000">{</font> 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">minutoTarget</font> <font color="#434f54">=</font> <font color="#000000">60</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+
+ &nbsp;&nbsp;&nbsp;
+ &nbsp;
+<font color="#95a5a6">&#47;************************************************************************************************</font>
+<font color="#95a5a6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Envio de datos mediante LoRa</font>
+<font color="#95a5a6">************************************************************************************************&#47;</font>
+
+ &nbsp;<font color="#5e6d03">if</font><font color="#000000">(</font><font color="#000000">flat1</font><font color="#434f54">!=</font><font color="#000000">1.0</font> <font color="#434f54">&amp;&amp;</font> <font color="#000000">flon1</font><font color="#434f54">!=</font><font color="#000000">1.0</font><font color="#000000">)</font><font color="#000000">{</font>
+
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;si latitud y longitud son datos válidos, entonces se enviara la información mediante LoRa 3 veces</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">enviarInformacion</font><font color="#000000">(</font><font color="#000000">temperatura</font><font color="#434f54">,</font> <font color="#000000">bateria</font><font color="#434f54">,</font> <font color="#000000">flon1</font><font color="#434f54">,</font> <font color="#000000">flat1</font><font color="#434f54">,</font> <font color="#005c5f">&#34;2&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">contador</font><font color="#434f54">&lt;=</font><font color="#000000">3</font><font color="#000000">)</font><font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">enviarInformacion</font><font color="#000000">(</font><font color="#000000">temperatura</font><font color="#434f54">,</font> <font color="#000000">bateria</font><font color="#434f54">,</font> <font color="#000000">flon1</font><font color="#434f54">,</font> <font color="#000000">flat1</font><font color="#434f54">,</font> <font color="#005c5f">&#34;2&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delay</font><font color="#000000">(</font><font color="#000000">1000</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">contador</font><font color="#434f54">++</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">}</font><font color="#5e6d03">else</font><font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">contador</font><font color="#434f54">=</font><font color="#000000">0</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Cacular los segundos que el dispositivo estará en sueño profundo</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#00979c">int</font> <font color="#000000">segundosADormir</font> <font color="#434f54">=</font> <font color="#000000">(</font><font color="#000000">(</font><font color="#000000">minutoTarget</font> <font color="#434f54">-</font> <font color="#000000">minuto</font> <font color="#434f54">-</font> <font color="#000000">1</font><font color="#000000">)</font><font color="#434f54">*</font><font color="#000000">60</font><font color="#000000">)</font> <font color="#434f54">+</font> <font color="#000000">(</font><font color="#000000">60</font> <font color="#434f54">-</font> <font color="#000000">segundo</font><font color="#000000">)</font><font color="#000000">;</font> &nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;La ESP entra en sueño profundo.</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">veteaDormir</font><font color="#000000">(</font><font color="#000000">segundosADormir</font><font color="#000000">)</font><font color="#000000">;</font> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;&nbsp;&nbsp;
+ &nbsp;<font color="#000000">}</font><font color="#5e6d03">else</font><font color="#000000">{</font> <font color="#434f54">&#47;&#47;Para pruebas mientras no se tenga un dato valido el LED de la tarjeta parapadeara </font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">LEDstate</font> <font color="#434f54">=</font> &nbsp;<font color="#000000">1</font> <font color="#434f54">-</font> <font color="#000000">LEDstate</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">2</font><font color="#434f54">,</font><font color="#000000">LEDstate</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;<font color="#000000">enviarInformacion</font><font color="#000000">(</font><font color="#000000">temperatura</font><font color="#434f54">,</font> <font color="#000000">bateria</font><font color="#434f54">,</font><font color="#434f54">-</font><font color="#000000">78.489057</font><font color="#434f54">,</font><font color="#434f54">-</font><font color="#000000">0.212065</font><font color="#434f54">,</font> <font color="#005c5f">&#34;2&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Si pasaron 90 segundos calcular el tiempo restante para que el dispositivo se quede apagado para ahorrar bateria</font>
+ &nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">if</font><font color="#000000">(</font><font color="#d35400">millis</font><font color="#000000">(</font><font color="#000000">)</font><font color="#434f54">&gt;=</font><font color="#000000">90000</font><font color="#000000">)</font><font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#00979c">int</font> <font color="#000000">segundoCalculado</font> <font color="#434f54">=</font> <font color="#000000">60</font> <font color="#434f54">-</font> <font color="#000000">(</font><font color="#d35400">millis</font><font color="#000000">(</font><font color="#000000">)</font><font color="#434f54">*</font><font color="#000000">0.001</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47;Serial.println(TIME_TO_SLEEP + segundoCalculado);</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">veteaDormir</font><font color="#000000">(</font><font color="#000000">TIME_TO_SLEEP</font> <font color="#434f54">+</font> <font color="#000000">segundoCalculado</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+ &nbsp;&nbsp;&nbsp;
+ &nbsp;<font color="#000000">}</font>
+
+<font color="#000000">}</font>
+
+</pre>

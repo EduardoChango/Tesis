@@ -1,0 +1,3 @@
+Removed Pin From Net: NetName=3V3 Pin=U1-1
+Added Pin To Net: NetName=Vext Pin=U1-1
+Added Room: Name=FirebeetleNodoFinal

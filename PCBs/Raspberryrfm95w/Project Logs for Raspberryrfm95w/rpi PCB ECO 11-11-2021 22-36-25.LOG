@@ -1,0 +1,3 @@
+Change Component Footprint: Designator=P1 Old Footprint=MHDR2X20 New Footprint=HDR2X20H
+Change Component Comment : Designator=P1 Old Comment=MHDR2X20 New Comment=Header 20X2H
+Added Room: Name=rpi

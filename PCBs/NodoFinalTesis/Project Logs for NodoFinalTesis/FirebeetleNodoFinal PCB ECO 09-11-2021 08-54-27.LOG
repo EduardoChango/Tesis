@@ -1,0 +1,17 @@
+Added Component: Designator=IC1(FIREBEETLE)
+Add component. Clean all parameters for all variants
+Added Component: Designator=IC2(NEO6M)
+Add component. Clean all parameters for all variants
+Added Component: Designator=IC3(RFM95W)
+Add component. Clean all parameters for all variants
+Added Component: Designator=U1(IRSENSOR)
+Add component. Clean all parameters for all variants
+Added Pin To Net: NetName=GND Pin=IC1-3
+Added Pin To Net: NetName=TX Pin=IC1-14
+Added Pin To Net: NetName=TX Pin=IC2-2
+Added Pin To Net: NetName=GND Pin=U1-2
+Added Member To Class: ClassName=FirebeetleNodoFinal Member=Component IC1 FIREBEETLE
+Added Member To Class: ClassName=FirebeetleNodoFinal Member=Component IC2 NEO6M
+Added Member To Class: ClassName=FirebeetleNodoFinal Member=Component IC3 RFM95W
+Added Member To Class: ClassName=FirebeetleNodoFinal Member=Component U1 MLX90614
+Added Room: Name=FirebeetleNodoFinal

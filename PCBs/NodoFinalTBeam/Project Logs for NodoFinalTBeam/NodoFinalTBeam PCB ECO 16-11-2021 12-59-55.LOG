@@ -1,0 +1,13 @@
+Added Component: Designator=*(Li18650)
+Add component. Clean all parameters for all variants
+Added Component: Designator=IC2(NEO6M)
+Add component. Clean all parameters for all variants
+Added Pin To Net: NetName=Net*_1 Pin=*-1
+Added Pin To Net: NetName=GND Pin=*-2
+Added Pin To Net: NetName=GND_GPS Pin=IC2-1
+Added Pin To Net: NetName=RX Pin=IC2-2
+Added Pin To Net: NetName=TX Pin=IC2-3
+Added Pin To Net: NetName=3V3 Pin=IC2-4
+Added Member To Class: ClassName=NodoFinalTbeam Member=Component * Li18650
+Added Member To Class: ClassName=NodoFinalTbeam Member=Component IC2 NEO6M
+Added Room: Name=NodoFinalTbeam

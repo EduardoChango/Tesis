@@ -1,0 +1,5 @@
+Removed Pin From Net: NetName=3V3GPS Pin=IC4-2
+Removed Pin From Net: NetName=3V3 Pin=IC4-31
+Added Pin To Net: NetName=3V3 Pin=IC4-2
+Added Pin To Net: NetName=3V3GPS Pin=IC4-31
+Added Room: Name=FirebeetleNodoFinal

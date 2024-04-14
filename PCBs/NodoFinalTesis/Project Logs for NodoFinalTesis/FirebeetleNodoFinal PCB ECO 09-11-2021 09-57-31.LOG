@@ -1,0 +1,34 @@
+Added Pin To Net: NetName=GND Pin=IC3-1
+Added Pin To Net: NetName=GND Pin=IC3-8
+Added Pin To Net: NetName=3V3 Pin=IC1-31
+Added Pin To Net: NetName=3V3 Pin=IC2-4
+Added Pin To Net: NetName=3V3 Pin=IC3-12
+Added Pin To Net: NetName=3V3 Pin=U1-1
+Added Net: Name=3V3
+Added Pin To Net: NetName=DIO0 Pin=IC1-22
+Added Pin To Net: NetName=DIO0 Pin=IC3-11
+Added Net: Name=DIO0
+Added Pin To Net: NetName=MISO Pin=IC1-25
+Added Pin To Net: NetName=MISO Pin=IC3-7
+Added Net: Name=MISO
+Added Pin To Net: NetName=MOSI Pin=IC1-26
+Added Pin To Net: NetName=MOSI Pin=IC3-6
+Added Net: Name=MOSI
+Added Pin To Net: NetName=NSS Pin=IC1-21
+Added Pin To Net: NetName=NSS Pin=IC3-4
+Added Net: Name=NSS
+Added Pin To Net: NetName=RST Pin=IC1-20
+Added Pin To Net: NetName=RST Pin=IC3-3
+Added Net: Name=RST
+Added Pin To Net: NetName=RX Pin=IC1-13
+Added Pin To Net: NetName=RX Pin=IC2-2
+Added Net: Name=RX
+Added Pin To Net: NetName=SCK Pin=IC1-27
+Added Pin To Net: NetName=SCK Pin=IC3-5
+Added Net: Name=SCK
+Added Pin To Net: NetName=SCL Pin=IC1-24
+Added Pin To Net: NetName=SCL Pin=U1-3
+Added Net: Name=SCL
+Added Pin To Net: NetName=SDA Pin=IC1-23
+Added Pin To Net: NetName=SDA Pin=U1-4
+Added Net: Name=SDA

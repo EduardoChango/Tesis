@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/js/ol/css/ol.css">
+    <link rel="stylesheet" href="../static/css/mystyle.css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <title>Proyecto de Titulacion</title>
+</head>
+
+
+<body scroll="no;">
+
+    <!--Presentacion de entrada-->
+    <div id="cargando" class="panel_completo">
+        <div>
+          <br>
+          <div>
+            <img src="../static/img/Membrete.png" class="logo1" alt="" />
+          </div>
+        </div>
+        <br>
+        <p class="titulo">DISEÑO E IMPLEMENTACIÓN DE UN PROTOTIPO DE <br>MONITOREO DE GEOPOSICIÓN Y TEMPERATURA CORPORAL<br>PARA GANADO VACUNO MEDIANTE DISPOSITIVOS DE<br>COMUNICACIÓN LORA.</p>
+        <p class = "subtitulo">TRABAJO DE TITULACIÓN PREVIO A LA OBTENCIÓN DEL TÍTULO DE <br>INGENIERO EN ELECTRÓNICA Y CONTROL</p>
+        <p class = "subtitulo1">EDUARDO ISMAEL CHANGO ANALUISA</p>
+        <p class = "subtitulo2">DIRECTOR: Dr. GEOVANNY DANILO CHAVEZ GARCIA</p>  
+        
+        <p class="version">Cargando, por favor espere.</p>
+        <p class="hecho">Hecho en Ecuador</p>
+        <p class = "subtitulo3">Quito, marzo 2022 </p>
+      </div>
+      
+      <!--Presentacion de salida-->
+      <div id="apagado_reinicio" class="panel_completo" style="display: none;">
+          <div>
+            <div>
+              <img src="../static/img/Membrete.png" class="logo1" alt="" />
+            </div>
+          </div>
+          <br>
+          <p class="titulo">Mensaje.</p>
+          <p class="version">Prototipo</p>
+          <br>
+          <div>
+            <div>
+              <img src="../static/img/salida.png" class="logo1" alt="" />
+            </div>
+          </div>
+          <br>
+          <p class="hecho">Hecho en Ecuador</p>
+      </div>
+
+
+
+
+
+    <!--Crear una etiqueta de audio, y enlazarla al archivo .wav de alarma-->
+    <audio id="myAudio">
+        <source src="../static/audio/Alarm05.wav" type="audio/wav">
+    </audio>
+
+    <!--Crear la division que desplegara la alarma correspondiente-->
+    <div class= "alarma" id="miAlarma" style="display:none;">
+        <div class = "column" style = "height: 100%; width: 10%; border-right-width: 2px; border-right-style: solid;">
+            <img src="../static/img/Alarm1.png" style="padding-top: 17%; width: 75%; height: 66%; z-index: 1000;">
+        </div>
+
+        <div class = "column" style = "width: 79%; padding-top: 3%;">
+            <div>Alerta: <span id="mensaje1Id"> La vaca se escapó </span> </div>
+        </div>
+        <div class = "column" style = "height: 100%; width: 10%; border-left-width: 2px; border-left-style: solid;"> </div>
+    </div>
+    
+    <!--Crear la barra superior que contiene opciones-->
+    <nav class="miBarra">
+        <a class="active" id="reiniciar" style="width: 2%;"><img src="../static/img/Apagar.png" style="width: 45%; height: 45%; z-index: 1000;"></a>
+        <a id="limiteCerca">Conf Cerca</a>
+        <!--<a id="reportar">Reporte</a>-->
+        <a id="about">Acerca de</a>
+        <b id = "tempRaspberry" style="position: absolute; right: 155px;">40 °C</b>
+        <b id = "horaRaspberry" style="position: absolute; right: 5px;">2021-01-03 14:45:10 </b>
+    </nav>
+
+
+    <!-- Modales que se desplegan desde el menu superior  -->
+
+    <div class = "modales" id = "modalReiniciar">
+        <div class = "modales-contenido">
+            <p class="dataDisplay">Desea apagar el equipo?</p>
+            <button onmousedown="apagarFuncion()" style="background-color: #04AA6D;">SI</button>
+            <button id = "cancelarApagado" style="background-color: rgb(148, 8, 8);">NO</button>
+
+            <p class="dataDisplay">Desea reiniciar el equipo?</p>
+            <button onmousedown="reiniciarFuncion()" style="background-color: #04AA6D;">SI</button>
+            <button id = "cancelarReinicio" style="background-color: rgb(148, 8, 8);">NO</button>
+        </div>
+    </div>
+
+    <!--Modal de configuracion de la cerca-->
+    <div class = "modales" id = "modalConfCerca">
+        <div class = "modales-contenido">
+            <span class = "cerrar">&times;</span>
+
+            <p class = "titulo_modal">Límites de la cerca virtual</p>
+
+            <div style = "padding-top: 10px;">
+                <button onmousedown="conf_LimCerca()" style="background-color: #04AA6D; width: 20%; border-radius: 5%;">Actualizar</button>
+            </div>
+            
+            <div style = "padding-top: 10px;">
+                <label >Latitud : </label>
+                <input type = "text" value = "-0.4074212" class = "campo" id="latCenterId">
+            </div>
+            
+            <div style = "padding-top: 10px;">
+                <label >Longitud: </label>
+                <input type = "text" value = "-78.5375126" class = "campo" id="lonCenterId">
+            </div>
+
+            <div style = "padding-top: 10px;">
+                <label >Radio[m]: </label>
+                <input type = "text" value = "200" class = "campo" id="radiusId">
+            </div>
+
+        </div>
+    </div>
+
+    <!--Modal de THI muestra las variaciones de las ultimas 24 hotas -->
+    <div class = "modales" id = "modalTHI">
+        <div class = "modales-contenido-THI">
+            <span class = "cerrar">&times;</span>
+            <p class = "titulo_modal">Temperatura Ambiente y Humedad Relativa</p>
+            <div class="container-fluid--" id="temperaturaId"></div>
+        </div>
+    </div>
+
+
+    
+    <!--Modal de Temperatura corporal -->
+    <div class = "modales" id = "modalTempCorporal">
+        <div class = "modales-contenido-THI">
+            <span class = "cerrar">&times;</span>
+            <p class = "titulo_modal">Temperatura Ambiente y Humedad Relativa</p>
+            <div class="container-fluid--" id="desplazamientoId"></div>
+        </div>
+    </div>
+
+    <div class = "modales" id="modalManualUsuario">
+        <div class = "modales-contenido-THI">
+            <span class = "cerrar">&times;</span>
+            <iframe src="../static/documents/Manual Usuario.pdf" style="width:600px; height:450px;" frameborder="0"></iframe>
+        </div>
+    </div>
+
+
+    <!--Organizacion de los elementos en la pantalla principal-->
+    <div class="row" style="height: 100%;" scroll="yes;">
+
+        <!--Columna Izquierda contiene el carnet informativo del dispositivo prototipo-->
+        <informativos class="column left informativos">
+
+            <!--Imagen que contiene los logos de DACI, EPN, LARSI -->
+            <div>
+                <img src="../static/img/Membrete.png" alt="Avatar" class="img_EPN">
+            </div>
+
+            <!--Carnet informativo -->
+            <div class="row">
+                <div class="carnets">
+                    
+                    <div class="column left" style="width: 30%;">
+                        <img src="../static/img/Carnet1.png" alt="Avatar" class="img_carnet">
+                    </div>
+
+                    <div class="column datosCarnet" style="font-size: 10pt">
+                        <div>ID: <span id="VacaId1"> - </span> </div> 
+                        <div>Temp Act: <span id="tempVacaId1"> 28 °C</span> </div> 
+                        <div>RSSI: <span id="rssiVacaId1"> -100 </span> </div>
+                        <div>SNR <span id="snrVacaId1"> 0 </span> </div>
+                        <div>Bat: <span id="batVacaId1"> 100% </span> </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <br>
+            <div class="row" style="padding-left: 12%;">
+                <button id = "opTempCorporal" class="infoTHI">
+                    Temperatura corporal
+                </button>
+            </div>
+            <br>
+            
+        </informativos>
+
+
+        <!--Columna central, contiene el mapa -->
+        <div class="column mapa" style="height: 124%; overflow: hidden;">
+            <div id="mapaId" class="map">
+                <div class="ol-popup" id="popupId">
+                    <a href="#" id="popupCloserId" class="ol-popup-closer"></a>
+                    <div id="popupContentId"></div>
+                </div>
+            </div>
+        </div>
+
+        <!--Columna derecha que contiene los datos de ambiente -->
+        <div class="column ambiente" style="height: 124%; overflow: hidden; text-align: center;">
+            <br>
+
+            <button class="infoTHI" id="opTHI">
+                <div style="padding-bottom: 10%;">THI</div>
+                <div class="column datosCarnet">
+                    <div id="thiAmbId" style="font-size: 24pt;"> 65.04</div>
+                </div>
+            </button>
+
+            <br>
+
+            <br>
+
+            <div class="row infoAmbiente">
+                <div style="padding-bottom: 10%;">Temp. Ambiente</div>
+
+                <div class="column left" style="width: 20%; padding-left: 15%;">
+                    <img src="../static/img/termometro.png" style="width: 100%; height: 100%;">
+                </div>
+
+                <div class="column datosAmbiente">
+                    <div id="tempAmbId" style="color: #271e57;">18.3 °C</div>
+                </div>
+            </div>
+            <br>
+
+            <div class="row infoAmbiente">
+                <div style="padding-bottom: 10%;">Humedad Relativa</div>
+
+                <div class="column left" style="width: 20%; padding-left: 15%;">
+                    <img src="../static/img/HR.png" style="width: 100%; height: 100%;">
+                </div>
+                
+                <div class="column datosAmbiente">
+                    <div id="hrAmbId" style="color: #271e57;">86 %</div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!--Librerias que se usaron para este proyecto -->
+    <script src="../static/js/ol/build/ol.js"></script>
+    <script src="../static/js/highcharts.js"></script>
+    <script src="../static/js/jquery-3.5.0.min.js"></script>
+    <!--Incluir el archivo JavaScript que contiene el front end -->
+    <script src="../static/js/index.js"></script>
+
+</body>
+
+</html>

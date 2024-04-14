@@ -1,0 +1,9 @@
+Removed Pin From Net: NetName=Net*_1 Pin=P1-1
+Added Component: Designator=sw1(InterruptorSMD)
+Add component. Clean all parameters for all variants
+Added Pin To Net: NetName=Net*_1 Pin=sw1-3
+Added Pin To Net: NetName=NetP1_1 Pin=P1-1
+Added Pin To Net: NetName=NetP1_1 Pin=sw1-2
+Added Net: Name=NetP1_1
+Added Member To Class: ClassName=FirebeetleNodoFinal Member=Component sw1 Sw
+Added Room: Name=FirebeetleNodoFinal

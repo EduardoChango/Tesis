@@ -1,0 +1,4 @@
+Added Component: Designator=*(Li18650)
+Add component. Clean all parameters for all variants
+Added Member To Class: ClassName=FirebeetleNodoFinal Member=Component * Li18650
+Added Room: Name=FirebeetleNodoFinal

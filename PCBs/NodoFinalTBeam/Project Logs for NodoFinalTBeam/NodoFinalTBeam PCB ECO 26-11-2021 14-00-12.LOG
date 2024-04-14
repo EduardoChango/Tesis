@@ -1,0 +1,8 @@
+Removed Pin From Net: NetName=VBAT Pin=P1-1
+Removed Pin From Net: NetName=VBAT Pin=sw1-2
+Removed Pin From Net: NetName=Net*_1 Pin=sw1-3
+Added Pin To Net: NetName=Net*_1 Pin=sw1-2
+Added Pin To Net: NetName=NetP1_1 Pin=P1-1
+Added Pin To Net: NetName=NetP1_1 Pin=sw1-3
+Added Net: Name=NetP1_1
+Added Room: Name=NodoFinalTbeam
